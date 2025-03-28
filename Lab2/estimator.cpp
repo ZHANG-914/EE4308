@@ -30,8 +30,8 @@ namespace ee4308::drone
         // ====  ====
         double az = msg.linear_acceleration.z - GRAVITY;
 
-        Xz_(0) += Xz_(1) * dt + 0.5 * az * dt * dt;  // 更新 z 位置
-        Xz_(1) += az * dt;                           // 更新 z 速度  
+        Xz_(0) += Xz_(1) * dt + 0.5 * az * dt * dt;  
+        Xz_(1) += az * dt;                            
 
 
         Eigen::Matrix2d Fz;
@@ -70,13 +70,13 @@ namespace ee4308::drone
         Eigen::Matrix<double, 1, 2> H;
         H << 1, 0;
 
-        double R = var_sonar_;
+        Eigen::Matrix<double, 1, 1> R;
+        R(0, 0) = var_sonar_;
 
         double y = Ysonar_ - (H * Xz_)(0);
 
-        Eigen::Matrix<double, 1, 1> S = H * Pz_ * H.transpose() + Eigen::Matrix<double, 1, 1>::Constant(R);
+        Eigen::Matrix<double, 1, 1> S = H * Pz_ * H.transpose() + R;
         Eigen::Matrix<double, 2, 1> K = Pz_ * H.transpose() * S.inverse();
-
         Xz_ = Xz_ + K * y;
 
         Pz_ = (Eigen::Matrix2d::Identity() - K * H) * Pz_;
